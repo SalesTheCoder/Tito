@@ -13,6 +13,7 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
+
 class GeradorController extends Controller
 {   
     public function gerar(Request $request){
@@ -38,13 +39,12 @@ class GeradorController extends Controller
     }
 
     public function gerarTxt($pessoas){
+        //gerar textos
         $txtContent = "";
         foreach($pessoas as $pessoa){
             $txtContent .= $pessoa->nome . " ; " . date('d-m-Y', strToTime($pessoa->dataNascimento)) . ' ; ' . $pessoa->nome_cidade . "\n";
         }
-
-        //Storage::disk('local')->put('currentDownload.txt', $txtContent);
-
+        
         header("Content-type: text/txt");
         header("Cache-Control: no-store, no-cache");
         header('Content-Disposition: attachment; filename="relatorio.txt"');
@@ -55,10 +55,20 @@ class GeradorController extends Controller
     public function gerarExcel($pessoas){
         $spreadsheet = new Spreadsheet();
         $activeWorksheet = $spreadsheet->getActiveSheet();
+
+        //tamanho
+        $activeWorksheet->getColumnDimension('A')->setWidth(30);
+        $activeWorksheet->getColumnDimension('B')->setWidth(30);
+        $activeWorksheet->getColumnDimension('C')->setWidth(30);
+
+        //primeiras colunas
         $activeWorksheet->setCellValue('A1', 'nome');
         $activeWorksheet->setCellValue('B1', 'data.Nasc');
         $activeWorksheet->setCellValue('C1', 'cidade');
 
+        
+        
+       //atribuindo valores
         for($i = 0; $i < $pessoas->count(); $i++){
             $position = $i + 2;
             $activeWorksheet->setCellValue('A'.$position, $pessoas[$i]->nome);
@@ -66,8 +76,7 @@ class GeradorController extends Controller
             $activeWorksheet->setCellValue('C'.$position, $pessoas[$i]->nome_cidade);
         }
 
-        //$writer = new Xlsx($spreadsheet);
-        //$writer->save('hello world.xlsx');
+        //fazendo download
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         $writer = IOFactory::createWriter($spreadsheet, 'Xlsx');
         $writer->save('php://output');
@@ -120,14 +129,7 @@ class GeradorController extends Controller
     }
 
     public function buscar(Request $request){
-                 /**
-            "nome" => null
-            "data_inicio" => null
-            "data_fim" => null
-            "cidade" => null
-            "gerar_txt" => "txt"
-         */
-        
+        //filtrar collection com base em parametros da busca
          $pessoas = Pessoa::with('cidade')->join('Cidade', 'cidade.id', '=', 'pessoa.id_cidade')->select('pessoa.*', 'cidade.id as tabela_cidade_id','cidade.nome as nome_cidade', )->get();
          //dd($pessoas);
          if(isset($request->nome)){
