@@ -7,6 +7,7 @@ use App\Models\Pessoa;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Dompdf\Dompdf;
 
 class GeradorController extends Controller
 {   
@@ -51,6 +52,46 @@ class GeradorController extends Controller
     
     public function gerarPdf($pessoas){
         
+        $html =  '
+        <style> 
+            table {
+                font-family: arial, sans-serif;
+                border-collapse: collapse;
+                width: 100%;
+            }
+            
+            td, th {
+                border: 1px solid #dddddd;
+                text-align: left;
+                padding: 8px;
+            }
+        </style>';
+
+        $html .='<table>';
+        $html .='
+        <tr>
+            <th>nome</th>
+            <th>data.Nasc</th>
+            <th>cidade</th>
+        </tr>';
+        foreach($pessoas as $pessoa){
+            $pessoa->dataNascimento = date('d/m/Y', strToTime($pessoa->dataNascimento));
+            $html .="
+            <tr>
+               <td> $pessoa->nome </td>
+               <td> $pessoa->dataNascimento </td>
+               <td> $pessoa->nome_cidade </td>
+            </tr>
+            ";
+        } 
+        $html .= '</table>';
+
+        $dompdf = new DomPdf();
+
+        $dompdf->loadHtml($html);
+
+        $dompdf->render();
+        $dompdf->stream();  
     }
 
     public function buscar(Request $request){
