@@ -27,6 +27,8 @@ class GeradorController extends Controller
 
                 $this->gerarPdf($pessoas);
             }
+        }else{
+            return response(404);
         }
     }
 
@@ -51,7 +53,7 @@ class GeradorController extends Controller
 
     
     public function gerarPdf($pessoas){
-        
+        //gerando pdf
         $html =  '
         <style> 
             table {
