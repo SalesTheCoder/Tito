@@ -1,0 +1,25 @@
+body{
+    height: 100vh;
+    width: 100vw;
+}
+
+.cadastro-container{
+    display:flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cadastro-msg{
+    position:absolute;
+    top: 0;
+}
+
+.error-msg{
+    background-color: red;
+    color: white;
+}
+
+.success-msg{
+    background-color: green;
+    color: white;
+}
