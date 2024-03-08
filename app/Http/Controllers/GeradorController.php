@@ -2,18 +2,23 @@
 
 namespace App\Http\Controllers;
 
+use Dompdf\Dompdf;
 use App\Models\Cidade;
 use App\Models\Pessoa;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+
 use Illuminate\Support\Facades\Storage;
-use Dompdf\Dompdf;
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class GeradorController extends Controller
 {   
     public function gerar(Request $request){
  
         $pessoas = $this->buscar($request);
+        
         if(!$pessoas->isEmpty()){
             if(isset($request->gerar_txt)){
 
@@ -48,7 +53,25 @@ class GeradorController extends Controller
     }
     
     public function gerarExcel($pessoas){
-        
+        $spreadsheet = new Spreadsheet();
+        $activeWorksheet = $spreadsheet->getActiveSheet();
+        $activeWorksheet->setCellValue('A1', 'nome');
+        $activeWorksheet->setCellValue('B1', 'data.Nasc');
+        $activeWorksheet->setCellValue('C1', 'cidade');
+
+        for($i = 0; $i < $pessoas->count(); $i++){
+            $position = $i + 2;
+            $activeWorksheet->setCellValue('A'.$position, $pessoas[$i]->nome);
+            $activeWorksheet->setCellValue('B'.$position, date('d/m/Y', strToTime($pessoas[$i]->dataNascimento)));
+            $activeWorksheet->setCellValue('C'.$position, $pessoas[$i]->nome_cidade);
+        }
+
+        //$writer = new Xlsx($spreadsheet);
+        //$writer->save('hello world.xlsx');
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        $writer = IOFactory::createWriter($spreadsheet, 'Xlsx');
+        $writer->save('php://output');
+
     }
 
     
